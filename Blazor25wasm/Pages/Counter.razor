@@ -1,0 +1,63 @@
+﻿@page "/counter"
+@using System.Xml.Linq;
+@using System.Text.Json;
+@using System.Text.Json.Serialization;
+<button aria-label="Click me" role="button" tabindex="0" onfocus="console.log('Button focused')" onblur="console.log('Button blurred')">Click me</button>
+<div aria-live="polite">This content changes dynamically</div>
+<div id="description" aria-hidden="true">This is a description of the button</div>
+<button aria-describedby="description">Hover over me</button>
+<h1>XML to JSON Converter</h1>
+
+<div>
+    <label for="xmlInput">Enter XML:</label>
+    <textarea id="xmlInput" @bind="XmlInput" style="min-height:5rem;min-width:8rem"></textarea>
+</div>
+
+<div>
+    <label for="jsonOutput">JSON Output:</label>
+    <div>
+        @foreach (var json in JsonOutputs)
+        {
+            <div>@json</div>
+        }
+    </div>
+</div>
+
+<button @onclick="ConvertXmlToJson">Convert</button>
+
+@code {
+    private string XmlInput { get; set; }
+    private List<string> JsonOutputs { get; set; } = new List<string>();
+
+    private void ConvertXmlToJson()
+    {
+        var xmlStrings = XmlInput.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
+        JsonOutputs.Clear();
+        foreach (var xmlString in xmlStrings)
+        {
+            var json = ConvertXmlToJson(xmlString);
+            JsonOutputs.Add(json);
+        }
+    }
+
+    private static string ConvertXmlToJson(string xmlString)
+    {
+        var xml = XDocument.Parse(xmlString);
+        var element = xml.Root;
+        var properties = new List<string>();
+        foreach (var attribute in element.Attributes())
+        {
+            properties.Add($"\"{attribute.Name.LocalName}\":\"{attribute.Value}\"");
+        }
+        if (!element.HasElements)
+        {
+            properties.Add($"\"{element.Name.LocalName}\":\"{element.Value}\"");
+        }
+        else
+        {
+            var children = element.Elements().Select(e => ConvertXmlToJson(e.ToString()));
+            properties.Add($"\"{element.Name.LocalName}\":{{{string.Join(",", children)}}}");
+        }
+        return $"{{{string.Join(",", properties)}}}";
+    }
+}

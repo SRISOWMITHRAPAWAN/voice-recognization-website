@@ -1,0 +1,75 @@
+﻿@*@page "/fetchdata"
+@inject IJSRuntime JSRuntime
+
+<input type="text" @onmouseover="@(() => ReadText("Track your paper search box"))" @onkeyup="Submittext" />
+<button @onclick="StartVoiceRecognition" @onmouseover="@(() => ReadText("voice recognization"))">🎤</button>
+@code {
+    IJSObjectReference? module;
+    private async Task ReadText(string text)
+    {
+        module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "../js/TextReader.js");
+        await module.InvokeVoidAsync("readText", text, DotNetObjectReference.Create(this));
+        //await JSRuntime.InvokeVoidAsync("readText", text);
+    }
+
+    private async void Submittext()
+    {
+        ///
+    }
+    private async void StartVoiceRecognition()
+    {
+        module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "../js/TextReader.js");
+        await module.InvokeVoidAsync("speechRecognition", DotNetObjectReference.Create(this));
+    }
+
+    [JSInvokable]
+    public void VoiceSearchApp(string result)
+    {
+        var searchQuery = result;
+        Console.WriteLine("result" + result);
+        StateHasChanged();
+    }
+}*@
+
+@page "/fetchdata"
+@inject IJSRuntime JSRuntime
+
+<div class="search-container">
+    <h1>Track Your Paper</h1>
+    <div class="search-box">
+        <input type="text" @bind="searchQuery" @onmouseover="@(() => ReadText("Track your paper search box"))" @onkeyup="SubmitText" placeholder="Search..." />
+        <button @onclick="StartVoiceRecognition" @onmouseover="@(() => ReadText("voice recognition"))">search by voice🎤</button>
+    </div>
+</div>
+
+@code {
+    IJSObjectReference? module;
+    private string searchQuery;
+
+    private async Task ReadText(string text)
+    {
+        module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "../js/TextReader.js");
+        await module.InvokeVoidAsync("readText", text, DotNetObjectReference.Create(this));
+        //await JSRuntime.InvokeVoidAsync("readText", text);
+    }
+
+    private void SubmitText()
+    {
+        // Implement your search logic here
+        Console.WriteLine("Search Query: " + searchQuery);
+    }
+
+    private async void StartVoiceRecognition()
+    {
+        module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "../js/TextReader.js");
+        await module.InvokeVoidAsync("speechRecognition", DotNetObjectReference.Create(this));
+    }
+
+    [JSInvokable]
+    public void VoiceSearchApp(string result)
+    {
+        var searchQuery = result;
+        Console.WriteLine("result" + result);
+        StateHasChanged();
+    }
+}
