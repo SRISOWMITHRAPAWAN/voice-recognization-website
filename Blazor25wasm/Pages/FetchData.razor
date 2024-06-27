@@ -33,7 +33,7 @@
 
 @page "/fetchdata"
 @inject IJSRuntime JSRuntime
-
+@using System.Text.Json
 <div class="search-container">
     <h1>Track Your Paper</h1>
     <div class="search-box">
@@ -42,10 +42,31 @@
     </div>
 </div>
 
+<div class="row mt-3" style="display:@hide ? block:none ">
+    @foreach (var article in articleList)
+    {
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Card</h5>
+                    <p class="card-text">Article ID: @article.ArticleId</p>
+                    <p class="card-text">Article Name: @article.ArticleName</p>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
 @code {
     IJSObjectReference? module;
     private string searchQuery;
-
+    public bool hide = false;
+    public class Article
+    {
+        public string ArticleId { get; set; }
+        public string ArticleName { get; set; }
+    }
+    public List<Article> articleList = new List<Article>();
     private async Task ReadText(string text)
     {
         module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "../js/TextReader.js");
@@ -66,10 +87,31 @@
     }
 
     [JSInvokable]
-    public void VoiceSearchApp(string result)
+    public async void VoiceSearchApp(string result)
     {
-        var searchQuery = result;
-        Console.WriteLine("result" + result);
+        // Remove spaces from the result
+        var searchQuery = result.Replace(" ", string.Empty);
+
+        // Assign the modified result to the searchQuery property
+        this.searchQuery = searchQuery;
+
+        // Optionally, you can perform further logic here based on the modified searchQuery
+
+        Console.WriteLine("Result without spaces: " + searchQuery);
+
+        StateHasChanged();
+
+        module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "../js/TextReader.js");
+        await module.InvokeVoidAsync("GetArticleByName", "TrackYourPaper", "TYP", searchQuery, DotNetObjectReference.Create(this));
+
+    }
+
+    [JSInvokable]  
+    public void ProcessAndStoreResults(string jsonResults)
+    {
+        hide = true;
+        articleList = JsonSerializer.Deserialize<List<Article>>(jsonResults);
         StateHasChanged();
     }
+
 }

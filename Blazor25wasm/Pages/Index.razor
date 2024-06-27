@@ -1,9 +1,47 @@
 ﻿@page "/"
+@inject IJSRuntime JSRuntime
+@using System.Text.Json
+<div class="form-body">
+    <div class="row">
+        <div class="form-holder">
+            <div class="form-content">
+                <div class="form-items">
+                    <p>Fill in the data below.</p>
+                    <form class="requires-validation" novalidate @onsubmit="HandleValidSubmit">
+                        <div class="col-md-12">
+                            <input class="form-control" type="text" @bind="article.ArticleId" name="ArticleID" placeholder="ArticleID" required>
+                            <div class="invalid-feedback">ArticleID field cannot be blank!</div>
+                        </div>
 
-<PageTitle>Index</PageTitle>
+                        <div class="col-md-12">
+                            <input class="form-control" type="text" @bind="article.ArticleName" name="ArticleName" placeholder="ArticleName" required>
+                            <div class="invalid-feedback">ArticleName field cannot be blank!</div>
+                        </div>
 
-<h1>Hello, world!</h1>
+                        <div class="form-button mt-3">
+                            <button id="submit" type="submit" class="btn btn-primary">Register</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-Welcome to your new app.
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+@code {
+    private Article article = new Article();
+
+    private async Task HandleValidSubmit()
+    {
+        var module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "../js/TextReader.js");
+        string articlestring = System.Text.Json.JsonSerializer.Serialize(article);
+        await module.InvokeVoidAsync("formsubmit", articlestring);
+    }
+
+    public class Article
+    {
+        public string ArticleId { get; set; }
+        public string ArticleName { get; set; }
+    }
+}
