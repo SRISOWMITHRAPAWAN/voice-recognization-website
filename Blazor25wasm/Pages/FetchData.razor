@@ -35,10 +35,10 @@
 @inject IJSRuntime JSRuntime
 @using System.Text.Json
 <div class="search-container">
-    <h1>Track Your Paper</h1>
+    <h1 style="color:white">Track Your Paper</h1>
     <div class="search-box">
         <input type="text" @bind="searchQuery" @onmouseover="@(() => ReadText("Track your paper search box"))" @onkeyup="SubmitText" placeholder="Search..." />
-        <button @onclick="StartVoiceRecognition" @onmouseover="@(() => ReadText("voice recognition"))">search by voice🎤</button>
+        <button @onclick="StartVoiceRecognition" @onmouseover="@(() => ReadText("voice recognition"))" class="btn btn-primary">search by voice🎤</button>
     </div>
 </div>
 
